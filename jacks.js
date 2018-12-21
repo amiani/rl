@@ -54,10 +54,10 @@ const expectedReturn = (carsOne, carsTwo, action) => {
 }
 
 let policyStable
+const THETA = .1
 do {
   //policy evaluation
   console.log('evaluating')
-  const THETA = .1
   let delta
   do {
     delta = 0
