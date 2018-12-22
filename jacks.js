@@ -1,3 +1,5 @@
+const fs = require('fs')
+
 const GAMMA = .9
 const EXPREQONE = 3
 const EXPREQTWO = 4
@@ -54,7 +56,7 @@ const expectedReturn = (carsOne, carsTwo, action) => {
 }
 
 let policyStable
-const THETA = .1
+const THETA = .01
 do {
   //policy evaluation
   console.log('evaluating')
@@ -77,14 +79,21 @@ do {
   for (let carsOne = 0; carsOne <= 20; carsOne++) {
     for (let carsTwo = 0; carsTwo <= 20; carsTwo++) {
       const oldAction = states[carsOne][carsTwo][1]
-      let bestAction = [0, 0]
+      let bestAction = 0
+      let bestActionValue = 0
       for (let action = -Math.min(5, carsTwo), maxAction = Math.min(5, carsOne); action <= maxAction; action++) {
         const actionValue = expectedReturn(carsOne, carsTwo, action)
-        actionValue > bestAction[0] && (bestAction = [actionValue, action])
+        if (actionValue > bestActionValue) {
+          bestAction = action
+          bestActionValue = actionValue
+        }
       }
       states[carsOne][carsTwo][1] = bestAction
-      if (oldAction !== bestAction) policyStable = false
+      if (oldAction !== bestAction) {
+        policyStable = false
+      }
     }
   }
 } while (!policyStable)
-console.log(states)
+const json = JSON.stringify(states)
+fs.writeFile('jacksrentalstates.json', json, 'utf8', err => console.error(err))
