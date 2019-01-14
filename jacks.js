@@ -27,22 +27,23 @@ for (let i = 0; i <= 20; i++) {
 }
 
 const expectedReturn = (carsOne, carsTwo, action) => {
-  let G = 0
+  let G = -2*Math.abs(action)
   const carsOneTransferred = Math.min(carsOne - action, 20)
   const carsTwoTransferred = Math.min(carsTwo + action, 20)
   //sum(p(sprime, r | s, pi(s)[r + gamma*V(sprime)])
   for (let carsOneNext = 0; carsOneNext <= 20; carsOneNext++) {
     for (let carsTwoNext = 0; carsTwoNext <= 20; carsTwoNext++) {
       //don't know the reward probabilities until after this loop because there are multiple ways to get each reward
-      const rewardProbs = Array(42).fill(0)
-      for (let carsOneReq = 0; carsOneReq <= carsOneTransferred; carsOneReq++) {
-        for (let carsTwoReq = 0; carsTwoReq <= carsTwoTransferred; carsTwoReq++) {
-          if (carsOneNext > (carsOneTransferred - carsOneReq) && carsTwoNext > (carsTwoTransferred - carsTwoReq)) {
-            rewardProbs[carsOneReq+carsTwoReq] += 
+      const rewardProbs = Array(41).fill(0)
+      for (let carsOneReq = 0; carsOneReq <= 12; carsOneReq++) {
+        for (let carsTwoReq = 0; carsTwoReq <= 12; carsTwoReq++) {
+          if (carsOneNext >= (carsOneTransferred - carsOneReq) && carsTwoNext >= (carsTwoTransferred - carsTwoReq)) {
+            rewardProbs[carsOneReq+carsTwoReq] += (
               poisson(carsOneNext - (carsOneTransferred - carsOneReq), EXPRETONE) *
               poisson(carsOneReq, EXPREQONE) *
               poisson(carsTwoNext - (carsTwoTransferred - carsTwoReq), EXPRETTWO) *
               poisson(carsTwoReq, EXPREQTWO)
+            )
           }
         }
       }
@@ -56,7 +57,7 @@ const expectedReturn = (carsOne, carsTwo, action) => {
 }
 
 let policyStable
-const THETA = .01
+const THETA = .0001
 do {
   //policy evaluation
   console.log('evaluating')
@@ -89,11 +90,8 @@ do {
         }
       }
       states[carsOne][carsTwo][1] = bestAction
-      if (oldAction !== bestAction) {
-        policyStable = false
-      }
+      oldAction !== bestAction && (policyStable = false)
     }
   }
 } while (!policyStable)
-const json = JSON.stringify(states)
-fs.writeFile('jacksrentalstates.json', json, 'utf8', err => console.error(err))
+fs.writeFile('jacksrentalstates.json', JSON.stringify(states), 'utf8', err => err && console.error(err))
